@@ -1,4 +1,4 @@
-# Ignorar dados locais (brutos e processados)
+# Ignorar dados locais (brutos e processados) DADOS PESADOS PARA O GITHUB
 data/raw/*
 data/processed/*
 !.gitkeep

@@ -2,44 +2,48 @@ import duckdb
 import time
 from pathlib import Path
 
-# Definindo caminhos de forma robusta com pathlib
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 RAW_DIR = BASE_DIR / "data" / "raw"
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 
-# Garante que a pasta de destino exista
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-def ingest_and_convert():
-    print("🚀 Iniciando ingestão de alta performance com DuckDB...")
+def convert_csv_to_parquet(split: str = "train"):
+    """
+    Converte e une as tabelas de transaction e identity em Parquet.
+    split: 'train' ou 'test'
+    """
+    print(f"🚀 Processando conjunto de dados: [{split.upper()}]...")
     start_time = time.time()
 
-    # Criação/Conexão com banco DuckDB em memória
     con = duckdb.connect(database=":memory:")
 
-    train_transaction_path = RAW_DIR / "train_transaction.csv"
-    train_identity_path = RAW_DIR / "train_identity.csv"
-    output_parquet_path = PROCESSED_DIR / "train_consolidated.parquet"
+    transaction_path = RAW_DIR / f"{split}_transaction.csv"
+    identity_path = RAW_DIR / f"{split}_identity.csv"
+    output_parquet_path = PROCESSED_DIR / f"{split}_consolidated.parquet"
 
-    # Query SQL vetorizada no DuckDB
-    # Usa a cláusula EXCLUDE para não duplicar a chave primária TransactionID
+    if not transaction_path.exists():
+        print(f"⚠️ Arquivo {transaction_path} não encontrado em data/raw/!")
+        return
+
     query = f"""
     COPY (
         SELECT 
             t.*,
             i.* EXCLUDE (TransactionID)
-        FROM read_csv_auto('{train_transaction_path}', HEADER=True) t
-        LEFT JOIN read_csv_auto('{train_identity_path}', HEADER=True) i
+        FROM read_csv_auto('{transaction_path}', HEADER=True) t
+        LEFT JOIN read_csv_auto('{identity_path}', HEADER=True) i
             ON t.TransactionID = i.TransactionID
     ) TO '{output_parquet_path}' (FORMAT 'PARQUET', COMPRESSION 'SNAPPY');
     """
 
-    print("⚡ Executando JOIN e exportando para Parquet...")
     con.execute(query)
 
     elapsed_time = time.time() - start_time
-    print(f"✅ Ingestão concluída com sucesso em {elapsed_time:.2f} segundos!")
-    print(f"📦 Arquivo gerado em: {output_parquet_path}")
+    print(f"✅ [{split.upper()}] convertido com sucesso em {elapsed_time:.2f} segundos!")
+    print(f"📦 Gerado: {output_parquet_path}\n")
 
 if __name__ == "__main__":
-    ingest_and_convert()
+    # Processa ambas as bases em lote
+    convert_csv_to_parquet("train")
+    convert_csv_to_parquet("test")

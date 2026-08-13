@@ -15,6 +15,6 @@ def run_query(query_filename: str):
     with open(query_path, "r", encoding="utf-8") as f:
         sql_script = f.read()
     
-    sql_script = sql_script.format(parquet_path=PARQUET_PATH)
+    sql_script = sql_script.format(parquet_path=PARQUET_PATH.as_posix())
     
     return duckdb.execute(sql_script).df()

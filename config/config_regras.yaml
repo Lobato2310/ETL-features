@@ -1,0 +1,39 @@
+# config/rules_config.yaml
+# Especificação de Regras de Negócio e SLAs - Fraud Sentinel AI
+
+# 1. Matriz de Triagem de Risco (Model Scores)
+risk_thresholds:
+  auto_approval_max: 0.15
+  auto_block_min: 0.70
+
+# 2. Regras Determinísticas e Filtros de Velocidade
+velocity_rules:
+  max_transactions_per_10m: 5
+  max_amount_ratio_vs_avg: 5.0    # 500% acima da média móvel
+  geo_device_window_hours: 1.0
+
+# 3. SLAs de Qualidade de Dados & Ingestão
+data_quality:
+  null_threshold_pct: 85.0        # Descartar colunas com >85% de nulos
+  target_column: "isFraud"
+  primary_key: "TransactionID"
+  time_column: "TransactionDT"
+
+# 4. Engenharia de Identidade e Padronização
+identity_rules:
+  synthetic_id_components:
+    - "card1"
+    - "addr1"
+    - "P_emaildomain"
+  top_email_providers:
+    - "gmail.com"
+    - "yahoo.com"
+    - "hotmail.com"
+    - "outlook.com"
+    - "icloud.com"
+  fallback_email_category: "outros_ou_corporativos"
+
+# 5. Governança e Explicabilidade
+governance:
+  top_shap_features_count: 3
+  policy_docs_path: "docs/policies/"

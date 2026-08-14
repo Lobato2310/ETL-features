@@ -7,7 +7,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 QUERIES_DIR = BASE_DIR / "src" / "db" / "queries"
-PARQUET_PATH = BASE_DIR / "data" / "processed" / "train_consolidated.parquet"
+PARQUET_PATH = BASE_DIR / "data" / "processed" / "train_clean.parquet"
 
 def run_query(query_filename: str, *args, **kwargs):
     query_path = QUERIES_DIR / query_filename
